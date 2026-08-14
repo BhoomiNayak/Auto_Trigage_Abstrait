@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Triage & Document Extractor | Abstrabit Demo</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #111113;
+            --bg-card: #161618;
+            --bg-elevated: #1c1c1f;
+            --border: #2a2a2d;
+            --border-hover: #3d3d42;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #10b981;
+            --accent-hover: #34d399;
+            --accent-dim: #10b98122;
+            --accent-border: #10b98144;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .container {
+            max-width: 940px;
+            margin: 0 auto;
+        }
+
+        /* --- Header --- */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-badge {
+            display: inline-block;
+            padding: 0.3rem 0.9rem;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.6rem;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* --- How It Works --- */
+        .how-it-works {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 700px) {
+            .cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.4rem 1rem;
+            text-align: center;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-border);
+            background: var(--bg-elevated);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .card h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* --- Supported Docs --- */
+        .supported-types {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .type-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.85rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .type-pill .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .dot.invoice { background: var(--warning); }
+        .dot.ticket { background: var(--danger); }
+        .dot.resume { background: var(--accent); }
+
+        /* --- Upload Section --- */
+        .upload-section {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-section:hover,
+        .upload-section.dragover {
+            border-color: var(--accent);
+            background: var(--bg-elevated);
+        }
+
+        .upload-section.dragover {
+            transform: scale(1.005);
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 0.75rem;
+            border-radius: 10px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--accent);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .upload-section h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .upload-section p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .upload-section input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 0.55rem 1.1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        select:hover, button:hover {
+            border-color: var(--border-hover);
+        }
+
+        select:focus, button:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        button.primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .file-info {
+            margin-top: 0.75rem;
+            padding: 0.5rem 0.9rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: none;
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        .file-info.visible {
+            display: block;
+        }
+
+        /* --- Loading --- */
+        .loading {
+            display: none;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 0.6rem;
+        }
+
+        .loading p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Results --- */
+        .result-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result-section.visible {
+            display: block;
+        }
+
+        .result-summary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .result-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.critical { background: #ef444433; color: #f87171; border: 1px solid #ef444455; }
+        .badge.high { background: #f59e0b33; color: #fbbf24; border: 1px solid #f59e0b55; }
+        .badge.medium { background: #3b82f633; color: #60a5fa; border: 1px solid #3b82f655; }
+        .badge.low { background: #10b98133; color: #34d399; border: 1px solid #10b98155; }
+
+        .badge.doc-type {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent-border);
+        }
+
+        .result-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.6rem;
+            font-size: 0.82rem;
+        }
+
+        .meta-item {
+            background: var(--bg-primary);
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .meta-item .label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-item .value {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.82rem;
+        }
+
+        .confidence-bar {
+            height: 4px;
+            background: var(--bg-elevated);
+            border-radius: 2px;
+            margin-top: 0.75rem;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-fill.high { background: var(--accent); }
+        .confidence-fill.medium { background: var(--warning); }
+        .confidence-fill.low { background: var(--danger); }
+
+        .result-json {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.73rem;
+            line-height: 1.6;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .result-json pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--text-secondary);
+        }
+
+        .error-message {
+            margin-top: 1.5rem;
+            padding: 0.9rem 1.1rem;
+            background: #ef444418;
+            border: 1px solid #ef444444;
+            border-radius: 8px;
+            color: #f87171;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .tech-tag {
+            padding: 0.2rem 0.5rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-badge">Abstrabit AI Demo</div>
+            <h1>Auto-Triage & Document Extractor</h1>
+            <p>An AI agent that reads your documents, extracts structured data, and auto-assigns priority — in seconds, not hours.</p>
+        </header>
+
+        <!-- How It Works -->
+        <section class="how-it-works">
+            <div class="section-label">How It Works</div>
+            <div class="cards">
+                <div class="card">
+                    <div class="step-number">1</div>
+                    <h3>Upload Document</h3>
+                    <p>Drop any invoice, support ticket, or resume (PDF or text file)</p>
+                </div>
+                <div class="card">
+                    <div class="step-number">2</div>
+                    <h3>AI Reads & Classifies</h3>
+                    <p>Agent auto-detects document type and extracts every relevant field</p>
+                </div>
+                <div class="card">
+                    <div class="step-number">3</div>
+                    <h3>Auto-Triage</h3>
+                    <p>Assigns priority level and business category with reasoning</p>
+                </div>
+                <div class="card">
+                    <div class="step-number">4</div>
+                    <h3>Structured Output</h3>
+                    <p>Clean JSON ready for your database, CRM, or workflow automation</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Supported Types -->
+        <div class="supported-types">
+            <div class="type-pill"><span class="dot invoice"></span> Invoices</div>
+            <div class="type-pill"><span class="dot ticket"></span> Support Tickets</div>
+            <div class="type-pill"><span class="dot resume"></span> Resumes</div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-section" id="dropZone">
+            <input type="file" id="fileInput" accept=".pdf,.txt,.md,.text">
+            <div class="upload-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h2>Drop your document here</h2>
+            <p>or click to browse — PDF, TXT, MD files up to 10MB</p>
+        </div>
+
+        <div class="file-info" id="fileInfo"></div>
+
+        <div class="controls">
+            <select id="docType" aria-label="Document type">
+                <option value="">Auto-detect type</option>
+                <option value="invoice">Invoice</option>
+                <option value="support_ticket">Support Ticket</option>
+                <option value="resume">Resume / CV</option>
+            </select>
+            <button class="primary" id="extractBtn" disabled>Extract & Triage</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI is reading and analyzing your document...</p>
+        </div>
+
+        <!-- Error -->
+        <div class="error-message" id="errorMsg"></div>
+
+        <!-- Results -->
+        <div class="result-section" id="resultSection">
+            <div class="result-summary">
+                <div class="result-header">
+                    <h3>Extraction Result</h3>
+                    <span class="badge doc-type" id="badgeDocType"></span>
+                    <span class="badge" id="badgePriority"></span>
+                </div>
+
+                <div class="result-meta">
+                    <div class="meta-item">
+                        <div class="label">Category</div>
+                        <div class="value" id="metaCategory">-</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="label">Confidence</div>
+                        <div class="value" id="metaConfidence">-</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="label">Reasoning</div>
+                        <div class="value" id="metaReasoning">-</div>
+                    </div>
+                </div>
+
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+
+            <div class="result-json" id="resultJson">
+                <pre></pre>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Built as a use case demo for <a href="https://www.abstrabit.com/" target="_blank" rel="noopener">Abstrabit</a> — Operational Excellence at Scale</p>
+            <div class="tech-stack">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">FastAPI</span>
+                <span class="tech-tag">Groq LLM</span>
+                <span class="tech-tag">Pydantic</span>
+                <span class="tech-tag">Instructor</span>
+            </div>
+            <p style="margin-top: 0.6rem;"><a href="/docs">API Documentation</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const docType = document.getElementById('docType');
+        const extractBtn = document.getElementById('extractBtn');
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('errorMsg');
+        const resultSection = document.getElementById('resultSection');
+
+        let selectedFile = null;
+
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileInfo.textContent = `Selected: ${file.name} (${sizeMB} MB)`;
+            fileInfo.classList.add('visible');
+            extractBtn.disabled = false;
+            hideResults();
+        }
+
+        function hideResults() {
+            resultSection.classList.remove('visible');
+            errorMsg.classList.remove('visible');
+        }
+
+        extractBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            loading.classList.add('visible');
+            hideResults();
+            extractBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            if (docType.value) formData.append('doc_type', docType.value);
+
+            try {
+                const response = await fetch('/api/v1/extract', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail?.message || data.message || JSON.stringify(data.detail || data));
+                }
+
+                displayResult(data);
+            } catch (err) {
+                errorMsg.textContent = `Error: ${err.message}`;
+                errorMsg.classList.add('visible');
+            } finally {
+                loading.classList.remove('visible');
+                extractBtn.disabled = false;
+            }
+        });
+
+        function displayResult(data) {
+            // Document type badge
+            const badgeDocType = document.getElementById('badgeDocType');
+            badgeDocType.textContent = (data.document_type || '').replace(/_/g, ' ');
+
+            // Priority badge
+            const badgePriority = document.getElementById('badgePriority');
+            const priority = data.triage?.priority || 'medium';
+            badgePriority.textContent = priority;
+            badgePriority.className = `badge ${priority}`;
+
+            // Meta info
+            document.getElementById('metaCategory').textContent = (data.triage?.category || '-').replace(/_/g, ' ');
+
+            const confidence = data.confidence?.overall_confidence || 0;
+            document.getElementById('metaConfidence').textContent = `${(confidence * 100).toFixed(0)}%`;
+            document.getElementById('metaReasoning').textContent = data.triage?.reasoning || '-';
+
+            // Confidence bar
+            const fill = document.getElementById('confidenceFill');
+            fill.style.width = `${confidence * 100}%`;
+            fill.className = 'confidence-fill';
+            if (confidence >= 0.8) fill.classList.add('high');
+            else if (confidence >= 0.5) fill.classList.add('medium');
+            else fill.classList.add('low');
+
+            // JSON output
+            const jsonPre = document.querySelector('#resultJson pre');
+            jsonPre.textContent = JSON.stringify(data, null, 2);
+
+            resultSection.classList.add('visible');
+        }
+    </script>
+</body>
+</html>

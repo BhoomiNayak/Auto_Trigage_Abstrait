@@ -1,0 +1,39 @@
+INVOICE
+
+Invoice Number: INV-2024-0847
+Date: November 1, 2024
+Due Date: November 15, 2024
+
+FROM:
+Acme Consulting Group
+123 Business Park Drive, Suite 400
+San Francisco, CA 94105
+Email: billing@acmeconsulting.com
+Phone: (415) 555-0192
+
+BILL TO:
+TechStart Inc.
+456 Innovation Way
+Austin, TX 78701
+Attn: Accounts Payable
+
+DESCRIPTION OF SERVICES:
+---------------------------------------------------------------
+| Description                      | Hours | Rate    | Total    |
+---------------------------------------------------------------
+| Strategy Consulting - October    | 40    | $150.00 | $6,000.00|
+| Market Research & Analysis       | 20    | $125.00 | $2,500.00|
+| Presentation Development         | 8     | $100.00 | $800.00  |
+---------------------------------------------------------------
+
+Subtotal:                                           $9,300.00
+Tax (8.5%):                                         $790.50
+TOTAL DUE:                                          $10,090.50
+
+Payment Terms: Net 14
+Payment Methods: Wire Transfer, ACH, Check
+
+Please remit payment by November 15, 2024.
+Late payments subject to 1.5% monthly finance charge.
+
+Thank you for your business!

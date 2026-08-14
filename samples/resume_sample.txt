@@ -1,0 +1,56 @@
+PRIYA SHARMA
+Senior Software Engineer
+
+Contact:
+Email: priya.sharma@email.com
+Phone: +1 (628) 555-0234
+Location: San Francisco, CA
+LinkedIn: linkedin.com/in/priyasharma-dev
+Portfolio: priyasharma.dev
+
+PROFESSIONAL SUMMARY
+Experienced full-stack engineer with 7+ years building scalable SaaS applications. Passionate about clean architecture, developer experience, and shipping reliable software. Led engineering teams of 3-6 developers. Strong background in Python, TypeScript, and cloud infrastructure.
+
+TECHNICAL SKILLS
+- Languages: Python, TypeScript, JavaScript, Go, SQL
+- Frameworks: FastAPI, Django, React, Next.js, Node.js
+- Databases: PostgreSQL, Redis, MongoDB, DynamoDB
+- Cloud/DevOps: AWS (ECS, Lambda, S3, RDS), Docker, Kubernetes, Terraform
+- Tools: Git, GitHub Actions, Datadog, Sentry, Jira
+
+SOFT SKILLS
+- Technical leadership and mentoring
+- Cross-functional collaboration
+- System design and architecture decisions
+- Clear technical communication
+
+WORK EXPERIENCE
+
+Senior Software Engineer | CloudScale Inc. | Jan 2022 - Present (2.5 years)
+- Led migration of monolithic Django app to microservices (FastAPI + React), reducing deploy time by 80%
+- Architected real-time data pipeline processing 2M+ events/day using AWS Lambda and DynamoDB
+- Mentored 4 junior engineers, establishing code review culture and engineering standards
+
+Software Engineer II | DataFlow Systems | Mar 2019 - Dec 2021 (2.8 years)
+- Built customer-facing analytics dashboard serving 500+ enterprise clients
+- Designed and implemented REST API handling 10K+ requests/minute with 99.9% uptime
+- Reduced infrastructure costs by 40% through query optimization and caching strategies
+
+Software Engineer | StartupXYZ | Jun 2017 - Feb 2019 (1.7 years)
+- Full-stack development of B2B SaaS platform from 0 to 1,000 active users
+- Implemented payment integration (Stripe), user auth (Auth0), and notification system
+- Shipped features in 2-week sprints as part of a 4-person engineering team
+
+EDUCATION
+
+M.S. Computer Science | Stanford University | 2017
+B.Tech Computer Science & Engineering | IIT Delhi | 2015
+
+CERTIFICATIONS
+- AWS Solutions Architect - Professional (2023)
+- Certified Kubernetes Administrator (CKA) (2022)
+
+LANGUAGES
+- English (Fluent)
+- Hindi (Native)
+- Spanish (Conversational)
