@@ -92,7 +92,7 @@ async def llm_error_handler(request: Request, exc: LLMError):
         )
 
     # Sanitize error — don't expose API keys or internal paths
-    safe_message = "LLM service error. Please try again later."
+    safe_message = f"LLM service error: {error_msg}"
     if "authentication" in error_msg.lower() or "api_key" in error_msg.lower():
         safe_message = "LLM authentication failed. Check your GROQ_API_KEY configuration."
     elif "timeout" in error_msg.lower():
