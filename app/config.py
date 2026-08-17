@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
 
     # Model selection
-    groq_model_fast: str = "openai/gpt-oss-20b"
-    groq_model_accurate: str = "openai/gpt-oss-20b"
+    groq_model_fast: str = "qwen/qwen3.6-27b"
+    groq_model_accurate: str = "qwen/qwen3.6-27b"
 
     # App settings
     max_file_size_mb: int = 10
