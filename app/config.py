@@ -14,16 +14,15 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Groq API
-    groq_api_key: str = ""
+    # Google Gemini API
+    gemini_api_key: str = ""
 
     # Model selection
-    groq_model_fast: str = "qwen/qwen3.6-27b"
-    groq_model_accurate: str = "qwen/qwen3.6-27b"
+    gemini_model: str = "gemini-3.6-flash"
 
     # App settings
     max_file_size_mb: int = 10
-    max_retries: int = 3
+    max_retries: int = 2
     llm_timeout: int = 30  # seconds
 
     # Server
@@ -39,7 +38,7 @@ class Settings(BaseSettings):
     @property
     def is_configured(self) -> bool:
         """Check if the API key is properly configured."""
-        return bool(self.groq_api_key) and self.groq_api_key != "gsk_your_api_key_here"
+        return bool(self.gemini_api_key) and self.gemini_api_key != "your_gemini_api_key_here"
 
 
 @lru_cache()

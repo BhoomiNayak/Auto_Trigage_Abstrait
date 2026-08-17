@@ -85,7 +85,7 @@ async def llm_error_handler(request: Request, exc: LLMError):
             status_code=429,
             content={
                 "error": "rate_limited",
-                "message": "Groq API rate limit reached. Please retry.",
+                "message": "LLM rate limit reached. Please retry.",
                 "details": {"retry_after_seconds": 30},
             },
             headers={"Retry-After": "30"},
@@ -94,11 +94,11 @@ async def llm_error_handler(request: Request, exc: LLMError):
     # Sanitize error — don't expose API keys or internal paths
     safe_message = f"LLM service error: {error_msg}"
     if "authentication" in error_msg.lower() or "api_key" in error_msg.lower():
-        safe_message = "LLM authentication failed. Check your GROQ_API_KEY configuration."
+        safe_message = "LLM authentication failed. Check your GEMINI_API_KEY configuration."
     elif "timeout" in error_msg.lower():
         safe_message = "LLM request timed out. The document may be too large."
     elif "not configured" in error_msg.lower():
-        safe_message = "GROQ_API_KEY is not configured. Set it in .env file."
+        safe_message = "GEMINI_API_KEY is not configured. Set it in .env file."
 
     return JSONResponse(
         status_code=503,
@@ -117,7 +117,7 @@ async def runtime_error_handler(request: Request, exc: RuntimeError):
 
     safe_message = "An internal error occurred. Please try again."
     if "not configured" in error_msg.lower():
-        safe_message = "GROQ_API_KEY is not configured. Set it in .env file."
+        safe_message = "GEMINI_API_KEY is not configured. Set it in .env file."
     elif "classification failed" in error_msg.lower():
         safe_message = "Document classification service error. Please try again or provide doc_type."
 
@@ -140,7 +140,7 @@ async def startup_event():
     if not settings.is_configured:
         import warnings
         warnings.warn(
-            "GROQ_API_KEY is not configured! "
+            "GEMINI_API_KEY is not configured! "
             "Set it in .env file or as environment variable. "
             "API calls will fail until configured.",
             stacklevel=2,
@@ -153,9 +153,8 @@ async def health_check():
     return {
         "status": "healthy",
         "version": settings.app_version,
-        "llm_provider": "groq",
-        "model_fast": settings.groq_model_fast,
-        "model_accurate": settings.groq_model_accurate,
+        "llm_provider": "google_gemini",
+        "model": settings.gemini_model,
         "uptime_seconds": int(time.time() - _start_time),
     }
 

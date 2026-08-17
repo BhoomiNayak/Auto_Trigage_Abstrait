@@ -59,10 +59,10 @@ A FastAPI-based AI agent that:
 │                                                                 │
 │  ┌─────────────────┐  ┌──────────────────┐  ┌───────────────┐  │
 │  │   Extractor     │  │   Classifier     │  │  LLM Service  │  │
-│  │   Service       │  │   Service        │  │  (Instructor) │  │
+│  │   Service       │  │   Service        │  │  (Gemini)     │  │
 │  │                 │  │                  │  │               │  │
 │  │  PDF → Text     │  │  Text → Type     │  │  Text → JSON  │  │
-│  │  TXT → Text     │  │  (8b model)      │  │  (70b model)  │  │
+│  │  TXT → Text     │  │  (Gemini Flash)  │  │  (Gemini)     │  │
 │  │  MD  → Text     │  │                  │  │               │  │
 │  └────────┬────────┘  └────────┬─────────┘  └───────┬───────┘  │
 │           │                    │                     │           │
@@ -73,10 +73,10 @@ A FastAPI-based AI agent that:
 │                    EXTERNAL SERVICES                             │
 │                                                                 │
 │   ┌─────────────┐    ┌──────────────────────────────────────┐   │
-│   │  PyMuPDF    │    │         Groq API (Free Tier)          │   │
+│   │  PyMuPDF    │    │      Google Gemini API (Free Tier)    │   │
 │   │  (fitz)     │    │                                      │   │
-│   │             │    │  llama-3.1-8b-instant (fast/classify) │   │
-│   │  PDF parse  │    │  llama-3.3-70b-versatile (accurate)   │   │
+│   │             │    │  gemini-3.6-flash                     │   │
+│   │  PDF parse  │    │  (fast, structured JSON output)       │   │
 │   └─────────────┘    └──────────────────────────────────────┘   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -117,14 +117,14 @@ User uploads file
          │
          ▼
 ┌──────────────────┐
-│  Classify type   │  LLM detects: invoice | ticket | resume
-│  (if no hint)    │  Uses fast model (8b), first 800 chars
+│  Classify type   │  Gemini detects: invoice | ticket | resume
+│  (if no hint)    │  Uses first 800 chars for efficiency
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Extract data    │  Instructor sends schema-constrained prompt
-│                  │  to Groq, receives validated Pydantic object
+│  Extract data    │  Gemini generates structured JSON
+│                  │  Validated against Pydantic schema
 └────────┬─────────┘
          │
          ▼
@@ -147,11 +147,11 @@ User uploads file
 | Component | Technology | Why |
 |-----------|-----------|-----|
 | API Framework | **FastAPI** | Async, auto-generated Swagger docs, production-ready |
-| LLM Provider | **Groq** (free tier) | Fast inference, free API, Llama 3 models |
-| Structured Output | **Instructor + Pydantic v2** | Type-safe LLM responses with validation and retry |
+| LLM Provider | **Google Gemini** (free tier) | Fast inference, generous rate limits, JSON mode |
+| Structured Output | **Gemini JSON mode + Pydantic v2** | Type-safe responses with automatic validation |
 | PDF Extraction | **PyMuPDF (fitz)** | Fast, pure Python, no Java dependency |
 | Configuration | **pydantic-settings** | Type-safe env loading with validation |
-| Deployment | **Docker** | Single container, any cloud |
+| Deployment | **Render** | Free tier, auto-deploy from GitHub |
 
 ---
 
@@ -159,14 +159,14 @@ User uploads file
 
 ### Prerequisites
 
-- Python 3.10+
-- Groq API key (free at [console.groq.com/keys](https://console.groq.com/keys))
+- Python 3.11+
+- Google Gemini API key (free at [aistudio.google.com/apikey](https://aistudio.google.com/apikey))
 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-username/abstrait_auto_triage.git
-cd abstrait_auto_triage
+git clone https://github.com/BhoomiNayak/Auto_Trigage_Abstrait.git
+cd Auto_Trigage_Abstrait
 pip install -r requirements.txt
 ```
 
@@ -174,7 +174,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your Groq API key
+# Edit .env and add your Gemini API key
 ```
 
 ### 3. Run
@@ -245,13 +245,13 @@ curl -X POST http://localhost:8000/api/v1/classify \
 {
   "document_type": "invoice",
   "triage": {
-    "priority": "high",
+    "priority": "critical",
     "category": "consulting_services",
-    "reasoning": "Invoice for $10,090.50 due within 14 days from a consulting vendor"
+    "reasoning": "Invoice is overdue with a balance greater than $5,000"
   },
   "confidence": {
-    "overall_confidence": 0.92,
-    "low_confidence_fields": ["vendor_contact"]
+    "overall_confidence": 0.98,
+    "low_confidence_fields": []
   },
   "data": {
     "vendor_name": "Acme Consulting Group",
@@ -269,7 +269,7 @@ curl -X POST http://localhost:8000/api/v1/classify \
       }
     ],
     "payment_terms": "Net 14",
-    "is_overdue": false
+    "is_overdue": true
   }
 }
 ```
@@ -285,7 +285,7 @@ curl -X POST http://localhost:8000/api/v1/classify \
     "reasoning": "Angry customer, double-charged, threatening to cancel, requesting manager"
   },
   "confidence": {
-    "overall_confidence": 0.95,
+    "overall_confidence": 0.98,
     "low_confidence_fields": []
   },
   "data": {
@@ -331,106 +331,43 @@ abstrait_auto_triage/
 │   ├── services/
 │   │   ├── __init__.py
 │   │   ├── extractor.py          # PDF/text extraction (PyMuPDF)
-│   │   ├── classifier.py         # Document type detection
-│   │   └── llm.py                # Groq + Instructor extraction
+│   │   ├── classifier.py         # Document type detection (Gemini)
+│   │   └── llm.py                # Google Gemini structured extraction
 │   └── static/
 │       └── index.html            # Upload UI (drag-and-drop)
 ├── samples/                       # Sample documents for testing
 │   ├── invoice_sample.txt
 │   ├── ticket_sample.txt
 │   └── resume_sample.txt
-├── docs/                          # Planning documentation
-│   ├── PROJECT_OVERVIEW.md
-│   ├── ARCHITECTURE.md
-│   ├── DATA_MODELS.md
-│   ├── API_DESIGN.md
-│   └── IMPLEMENTATION_PLAN.md
-├── Dockerfile
-├── .dockerignore
-├── .gitignore
-├── .env.example
-├── requirements.txt
-├── Procfile                       # For Railway/Render deployment
-├── runtime.txt
+├── .env.example                   # Environment variable template
+├── .python-version                # Python version for deployment
+├── Procfile                       # Render/Heroku start command
+├── requirements.txt               # Pinned Python dependencies
 └── README.md
 ```
 
 ---
 
-## Deployment
+## Key Design Principles
 
-### Docker
+1. **Schema-first** — Every document type has a Pydantic model. The LLM is constrained to output valid JSON matching that schema.
 
-```bash
-docker build -t auto-triage .
-docker run -d -p 8000:8000 -e GROQ_API_KEY=gsk_your_key auto-triage
-```
+2. **Provider-agnostic LLM layer** — Swapping Gemini for another provider requires changing only the service layer.
 
-### Railway (recommended for demo)
+3. **Fail gracefully** — Low-confidence extractions are flagged, not silently passed through. Fields the LLM can't extract are marked as `null`.
 
-1. Push to GitHub
-2. [railway.app](https://railway.app) → New Project → Deploy from repo
-3. Add env var: `GROQ_API_KEY`
-4. Auto-deploys from Dockerfile
+4. **Auditable** — Every priority/category tag includes a `reasoning` field explaining why.
 
-### Render
-
-1. Push to GitHub
-2. [render.com](https://render.com) → New Web Service
-3. Build: `pip install -r requirements.txt`
-4. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add env var: `GROQ_API_KEY`
+5. **Stateless API** — Pure function: document in, JSON out. No database required.
 
 ---
 
-## Security
+## Live Demo
 
-| Concern | Mitigation |
-|---------|-----------|
-| Prompt injection | System prompts instruct to ignore embedded instructions; input truncated to 15k chars |
-| File upload attacks | Extension validation + PDF magic byte check |
-| API key exposure | `.env` gitignored; error messages sanitized (no key leakage) |
-| Large file DoS | 10MB file size limit enforced before processing |
-| Error information leakage | LLM errors return safe generic messages, not raw exceptions |
+**URL:** https://auto-trigage-abstrait.onrender.com/ui
 
 ---
 
-## Design Decisions
+## Built By
 
-| Decision | Reasoning |
-|----------|-----------|
-| Groq over OpenAI | Free tier, fast inference, good enough for demo |
-| Instructor over raw JSON | Automatic validation, retries on schema mismatch, type safety |
-| Separate classifier from extractor | Allows skip-classification when type is known; lighter prompt for routing |
-| Two-model strategy | 8b for fast tasks (classify), 70b for precision (extract) |
-| Pydantic v2 everywhere | Native FastAPI integration, fast serialization, clear schemas |
-| No database in MVP | Stateless API is simpler; persistence is one config change away |
-
----
-
-## How This Maps to Abstrabit's Value Proposition
-
-| Abstrabit Pain Point | How This Agent Solves It |
-|---------------------|--------------------------|
-| **Spreadsheet Hell** | Structured JSON replaces manual data entry entirely |
-| **Manual Ops Bottleneck** | Full automation — zero human intervention for standard docs |
-| **Fragile Infrastructure** | Clean API with validation; no brittle scripts |
-| **Tribal Knowledge** | Rules encoded in prompts and schemas, not in someone's head |
-
----
-
-## Future Enhancements
-
-- OCR support (pytesseract) for scanned PDFs
-- Webhook callbacks after extraction
-- Custom schemas via API (user-defined fields)
-- Multi-language support
-- Analytics dashboard (extraction volumes, accuracy tracking)
-- PostgreSQL persistence layer
-- API key authentication for production
-
----
-
-## License
-
-Built for demonstration purposes as part of an application to [Abstrabit](https://www.abstrabit.com/).
+**Bhoomi Nayak** — SDE Intern Application for [Abstrabit](https://www.abstrabit.com/)
