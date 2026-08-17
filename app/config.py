@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # Model selection
     groq_model_fast: str = "openai/gpt-oss-20b"
-    groq_model_accurate: str = "openai/gpt-oss-120b"
+    groq_model_accurate: str = "openai/gpt-oss-20b"
 
     # App settings
     max_file_size_mb: int = 10
